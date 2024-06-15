@@ -1,0 +1,47 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/storage
+    password: 1234
+    username: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: dWhjaXduZWNpbmVud25j
+  jpa:
+    generate-ddl: true
+    show-sql: true
+    hibernate:
+      ddl-auto: create-drop
+  flyway:
+    locations: classpath:db/migration
+    url: jdbc:mysql://localhost:3306/storage
+    user: root
+    password: 1234
+  session:
+    redis:
+      namespace: "spring:session"
+      flush-mode: on_save
+server:
+  servlet:
+    session:
+      timeout: 30m
+
+
+logging:
+  level:
+    root: info
+  file:
+    name: logs.log
+    path: /
+
+minio:
+  url: http://localhost:9090
+  bucket: user-files
+  accessKey: minioadmin
+  secretKey: minioadmin
+
+
+
+
