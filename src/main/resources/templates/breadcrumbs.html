@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <title>Breadcrumbs</title>
+</head>
+<body>
+
+<!--<div th:fragment="breadcrumbs (breadcrumbs)">-->
+<!--<form  th:action="@{/breadcrumbs}" method="get">-->
+
+
+<form id="breadcrumb" th:action="@{/breadcrumb}"  method="get">
+</form>
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+
+                <a th:href="@{/breadcrumb(path=)}">Home</a>
+
+            </li>
+            <li class="breadcrumb-item" th:each="entry, stat : ${breadcrumb}"  th:classappend="${stat.last} ? 'active'" th:with="folderName=${entry.getNameFolder()}, path=${entry.getPathToFolder()}">
+
+                <a th:unless="${stat.last}" th:href="@{/breadcrumb(path=${path})}" th:text="${folderName}"></a>
+                <span th:if="${stat.last}" th:text="${folderName}"></span>
+
+            </li>
+        </ol>
+    </nav>
+
+
+                        <nav class="nav flex-column" th:unless="${contentNotEmpty}"  th:each="element, stat : ${content}"  >
+
+                             <a th:if="${element.getStatus().name()=='FOLDER'}" class="nav-link active"  th:href="@{/breadcrumb(path=|${pathCurrentFolder}/${element.getName()}|)}" th:text="${element.getName()}">Active</a>
+                            <span th:if="${element.getStatus().name()=='FILE'}" class="nav-link" th:text="${element.getName()}">Link</span>
+
+                        </nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.3/dist/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+</body>
+</html>

@@ -6,12 +6,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import org.springframework.web.servlet.ModelAndView;
-
 //@EnableWebSecurity
 @Configuration
 @RequiredArgsConstructor
-public class SecSecurityConfig {
+public class MinioConfig {
     private final MinioProperties minioProperties;
 //    @Bean
 //    public PasswordEncoder passwordEncoder() {

@@ -4,11 +4,11 @@ spring:
     password: 1234
     username: root
     driver-class-name: com.mysql.cj.jdbc.Driver
-  data:
-    redis:
-      host: localhost
-      port: 6379
-      password: dWhjaXduZWNpbmVud25j
+#  data:
+#    redis:
+#      host: localhost
+#      port: 6379
+#      password: dWhjaXduZWNpbmVud25j
   jpa:
     generate-ddl: true
     show-sql: true
@@ -19,22 +19,26 @@ spring:
     url: jdbc:mysql://localhost:3306/storage
     user: root
     password: 1234
-  session:
-    redis:
-      namespace: "spring:session"
-      flush-mode: on_save
-server:
   servlet:
-    session:
-      timeout: 30m
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+#  session:
+#    redis:
+#      namespace: "spring:session"
+#      flush-mode: immediate
+#server:
+#  servlet:
+#    session:
+#      timeout: 1m
 
 
 logging:
   level:
     root: info
-  file:
-    name: logs.log
-    path: /
+#  file:
+#    name: logs.log
+#    path: /
 
 minio:
   url: http://localhost:9090
