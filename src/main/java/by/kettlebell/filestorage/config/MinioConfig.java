@@ -5,10 +5,12 @@ import io.minio.MinioClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
 //@EnableWebSecurity
 @Configuration
 @RequiredArgsConstructor
+@Component
 public class MinioConfig {
     private final MinioProperties minioProperties;
 //    @Bean

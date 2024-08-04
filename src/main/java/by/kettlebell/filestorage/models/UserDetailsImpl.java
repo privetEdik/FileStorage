@@ -1,14 +1,16 @@
 package by.kettlebell.filestorage.models;
 
 import by.kettlebell.filestorage.dto.entity.User;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 /*import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;*/
 
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class UserDetailsImpl /*implements UserDetails*/ {
-/*
+public class UserDetailsImpl implements UserDetails {
+
     private final String password;
 
     private final String username;
@@ -42,22 +44,26 @@ public class UserDetailsImpl /*implements UserDetails*/ {
 
     @Override
     public boolean isAccountNonExpired() {
-        return UserDetails.super.isAccountNonExpired();
+       // return UserDetails.super.isAccountNonExpired();
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return UserDetails.super.isAccountNonLocked();
+//        return UserDetails.super.isAccountNonLocked();
+        return true;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return UserDetails.super.isCredentialsNonExpired();
+//        return UserDetails.super.isCredentialsNonExpired();
+        return true;
     }
 
     @Override
     public boolean isEnabled() {
-        return UserDetails.super.isEnabled();
-    }*/
+//        return UserDetails.super.isEnabled();
+        return true;
+    }
 
 }

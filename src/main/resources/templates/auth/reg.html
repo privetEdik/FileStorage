@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+          crossorigin="anonymous">
+    <title>Registration</title>
+</head>
+<body>
+<!-- Navigation -->
+<div th:replace="~{component/nav-bar::nav-bar}"></div>
+<!------------------------------------------------------------------------------------------------>
+
+<div class="container border-3  mt-5">
+    <div class="row d-flex justify-content-center">
+        <div class="border border-warning border-1 rounded-1 col-4">
+            <div class="d-flex justify-content-center mt-3">
+                <div class="">Registration</div>
+            </div>
+            <form th:action="@{/registration}" th:method="post" th:object="${user}">
+                <div class="input-group mt-3">
+                    <input th:field="*{username}" id="floatingName" type="text" class="form-control"
+                           th:classappend="${#fields.hasErrors('username')} ? ' is-invalid'" required
+                           placeholder="username" aria-label="username" aria-describedby="basic-addon">
+                    <div class="invalid-feedback" th:errors="*{username}"></div>
+                </div>
+                <div class="input-group mt-3">
+                    <input th:field="*{password}" type="password" class="form-control" placeholder="password" required
+                           aria-label="password" aria-describedby="basic-addon"
+                           th:classappend="${#fields.hasErrors('password')} ? ' is-invalid'">
+                    <div class="invalid-feedback" th:if="${#fields.hasErrors('password')}"
+                         th:errors="*{password}"></div>
+                </div>
+
+                <div class="input-group my-3">
+                    <button type="submit" class="btn btn-outline-primary">Submit
+
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+</div>
+</body>
+</html>

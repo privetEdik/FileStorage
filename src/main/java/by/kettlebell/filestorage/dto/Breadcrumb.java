@@ -1,9 +1,6 @@
 package by.kettlebell.filestorage.dto;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import java.util.*;
 
@@ -11,6 +8,8 @@ import java.util.*;
 @Setter
 @ToString
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Breadcrumb {
     private String nameFolder;
     private String pathToFolder;

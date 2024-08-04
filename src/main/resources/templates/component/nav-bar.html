@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Nav-Bar</title>
+</head>
+<body>
+<div th:fragment="nav-bar">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark static-top">
+        <div class="container d-flex">
+            <div class="d-flex my-1">
+                <a class="navbar-brand" href="#">
+                    <img src="/image/kettlebell.png" alt="" width="30" height="30">
+                </a>
+                <a class="navbar-brand" href="">file storage</a>
+
+            </div>
+            <a sec:authorize="isAuthenticated()" class="nav-link" th:text="|login: ${login}|">login: </a>
+
+            <form sec:authorize="isAuthenticated()" class="d-flex my-1" th:action="@{/search}" th:method="get">
+                <div class="input-group">
+                    <input class="form-control me-2 col-2" type="search" th:name="filter"
+                           placeholder="repository search"
+                           aria-label="Поиск">
+                    <button class="btn btn-outline-success" type="submit">Search</button>
+                </div>
+            </form>
+
+
+            <div class="d-flex justify-content-end  my-1">
+                <div sec:authorize="isAuthenticated()">
+                    <form action="/logout" method="post">
+                        <button class="btn btn-sm btn-outline-success me-2 " type="submit">Logout</button>
+                    </form>
+                </div>
+
+                <a sec:authorize="isAnonymous()" class="btn btn-sm btn-outline-primary me-2" type="button"
+                   th:href="@{/registration}">Sign Up</a>
+
+                <a sec:authorize="isAnonymous()" class="btn btn-sm btn-outline-primary" type="button"
+                   th:href="@{/login}">Log In</a>
+            </div>
+
+        </div>
+    </nav>
+</div>
+</body>
+</html>
