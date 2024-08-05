@@ -38,7 +38,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ApplicationException.class)
     public String handleExceptionAppExc(ApplicationException e, RedirectAttributes redirectAttributes) {
-        System.out.println("e.getMessage: -> "+ e.getError().getMessage());
+
         redirectAttributes.addFlashAttribute("exception",e.getError().getMessage());
 
         return "redirect:/error-server";

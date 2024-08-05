@@ -11,6 +11,7 @@ import io.minio.messages.DeleteObject;
 import io.minio.messages.Item;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -18,14 +19,16 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
 @Slf4j
-public class FinalRepository {
-    private static final String ROOT_BUCKET = "user-files";
+public class MinioRepository {
+
+    @Value("${minio.bucket}")
+    private String rootBucket;
+
     private final MinioClient minioClient;
 
     public List<String> getInfo(String prefix) throws ApplicationException {
@@ -33,7 +36,7 @@ public class FinalRepository {
         try {
 
             ListObjectsArgs lArgs = ListObjectsArgs.builder()
-                    .bucket(ROOT_BUCKET)
+                    .bucket(rootBucket)
                     .prefix(prefix)
                     .recursive(true)
                     .build();
@@ -42,9 +45,7 @@ public class FinalRepository {
 
             for (Result<Item> itemResult : resp) {
                 Item i = itemResult.get();
-                System.out.println("i.objectName(): " + i.objectName());
                 listPathToObjects.add(i.objectName());
-
             }
         } catch (Exception e) {
             log.info("Error data retrieval: {} ", e.getMessage());
@@ -66,12 +67,11 @@ public class FinalRepository {
 
             Iterable<Result<DeleteError>> results = minioClient.removeObjects(
                     RemoveObjectsArgs.builder()
-                            .bucket(ROOT_BUCKET)
+                            .bucket(rootBucket)
                             .objects(deleteObjects)
                             .build()
 
             );
-            System.out.println("results----------> " + results.toString());
 
             for (Result<DeleteError> result : results) {
                 DeleteError error = result.get();
@@ -94,7 +94,7 @@ public class FinalRepository {
         try {
             minioClient.removeObject(
                     RemoveObjectArgs.builder()
-                            .bucket(ROOT_BUCKET)
+                            .bucket(rootBucket)
                             .object(prefix)
                             .build()
             );
@@ -107,10 +107,9 @@ public class FinalRepository {
 
     public void createEmptyFolder(String pathFull) {
         try {
-
             minioClient.putObject(
                     PutObjectArgs.builder()
-                            .bucket(ROOT_BUCKET)
+                            .bucket(rootBucket)
                             .object(pathFull)
                             .stream(InputStream.nullInputStream(), 0, -1)
                             .build());
@@ -126,11 +125,11 @@ public class FinalRepository {
 
             minioClient.copyObject(
                     CopyObjectArgs.builder()
-                            .bucket(ROOT_BUCKET)
+                            .bucket(rootBucket)
                             .object(outPath)
                             .source(
                                     CopySource.builder()
-                                            .bucket(ROOT_BUCKET)
+                                            .bucket(rootBucket)
                                             .object(inputPath)
                                             .build()
                             )
@@ -174,7 +173,7 @@ public class FinalRepository {
             );
 
             minioClient.uploadSnowballObjects(
-                    UploadSnowballObjectsArgs.builder().bucket(ROOT_BUCKET).objects(objects).build());
+                    UploadSnowballObjectsArgs.builder().bucket(rootBucket).objects(objects).build());
 
 
         } catch (Exception e) {
@@ -188,7 +187,7 @@ public class FinalRepository {
         try {
             return minioClient.getObject(
                     GetObjectArgs.builder()
-                            .bucket(ROOT_BUCKET)
+                            .bucket(rootBucket)
                             .object(fullPath)
                             .build());
         } catch (Exception e) {

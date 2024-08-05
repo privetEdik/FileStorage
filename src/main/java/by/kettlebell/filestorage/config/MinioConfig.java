@@ -1,33 +1,29 @@
 package by.kettlebell.filestorage.config;
 
-import by.kettlebell.filestorage.service.props.MinioProperties;
+
 import io.minio.MinioClient;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.stereotype.Component;
 
-//@EnableWebSecurity
 @Configuration
-@RequiredArgsConstructor
-@Component
 public class MinioConfig {
-    private final MinioProperties minioProperties;
-//    @Bean
-//    public PasswordEncoder passwordEncoder() {
-//        return new BCryptPasswordEncoder(11);
-//    }
-//
-//    @Bean
-//    public ModelAndView getModelAndView(){
-//        return new ModelAndView();
-//    }
+
+    @Value("${minio.url}")
+    private String minioUrl;
+
+    @Value("${minio.accessKey}")
+    private String accessKey;
+
+    @Value("${minio.secretKey}")
+    private String secretKey;
+
 
     @Bean
     public MinioClient minioClient() {
         return MinioClient.builder()
-                .endpoint("http://localhost:9000")
-                .credentials(/*minioProperties.getAccessKey()*/"minioadmin", /*minioProperties.getSecretKey()*/"minioadmin")
+                .endpoint(minioUrl)
+                .credentials(accessKey,secretKey)
                 .build();
     }
 

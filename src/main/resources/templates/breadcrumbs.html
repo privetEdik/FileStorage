@@ -122,11 +122,11 @@
 
 
                                 <!--++++++++++++++++++++++++++++++++++++++-->
-                                <!--++++++++++++++++Обновить имя файла или папки++++++++++++-->
+                                <!--++++++++++++++++Переименовать имя файла или папки++++++++++++-->
                                 <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                                     <!--class="dropdown-menu"-->
                                     <li class="dropdown-item">
-                                        <form th:action="@{/files}" th:method="post" th:object="${updateFolder}">
+                                        <form th:action="@{/patch}" th:method="post" th:object="${renameObject}">
                                             <!--class="dropdown-menu p-4"-->
                                             <div class="mb-3">
                                                 <label for="update-form" class="form-label">Rename</label>
@@ -137,11 +137,11 @@
 
                                                <!-- <input type="hidden" th:field="*{oldName}" th:value="${element.getName()}">-->
                                                 <input th:type="hidden" th:name="oldName" th:value="${element.getName()}">
+                                                <input th:type="hidden" th:name="status" th:value="${element.getStatus()}">
 
                                                 <!--<input type="hidden" th:field="*{pathCurrent}"
                                                        th:value="${pathCurrentFolder}">-->
-                                                <input th:type="hidden" th:name="pathCurrent"
-                                                       th:value="${pathCurrentFolder}">
+                                                <input th:type="hidden" th:name="pathCurrent" th:value="${pathCurrentFolder}">
 
 
                                             </div>
@@ -155,10 +155,11 @@
                                     </li>
                                     <!--++++++++++++++++ Кнопка удалить файл или папку++++++++++++-->
                                     <li class="dropdown-item">
-                                        <form th:action="@{/delete}" th:method="post"> <!--class="dropdown-menu p-4"-->
-                                            <input type="hidden" th:name="nameElem" th:value="${element.getName()}">
-                                            <input type="hidden" th:name="pathElem" th:value="${element.getPath()}">
-                                            <input type="hidden" th:name="statusElem" th:value="${element.getStatus()}">
+                                        <form th:action="@{/delete}" th:method="post" th:object="${actionObject}"> <!--class="dropdown-menu p-4"-->
+                                            <input type="hidden" th:name="name" th:value="${element.getName()}">
+                                            <input type="hidden" th:name="path" th:value="${element.getPath()}">
+                                            <input type="hidden" th:name="status" th:value="${element.getStatus()}">
+                                            <input type="hidden" th:name="currentPath" th:value="${pathCurrentFolder}">
                                             <!--                                        <input type="hidden" th:name="" th:value="${pathCurrentFolder}">-->
                                             <button type="submit" class="btn btn-primary">Remove object</button>
                                         </form>

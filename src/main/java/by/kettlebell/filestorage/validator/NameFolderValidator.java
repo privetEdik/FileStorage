@@ -5,7 +5,7 @@ import by.kettlebell.filestorage.exception.validation.ValidationException;
 import org.springframework.stereotype.Component;
 
 @Component
-public class NameFolderValidator implements Validator{
+public class NameFolderValidator implements Validator {
     @Override
     public void isValid(String nameFolder) throws ValidationException {
 

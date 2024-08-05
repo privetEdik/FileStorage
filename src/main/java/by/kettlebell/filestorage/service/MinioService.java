@@ -4,17 +4,12 @@ import by.kettlebell.filestorage.dto.*;
 import by.kettlebell.filestorage.exception.ApplicationException;
 import by.kettlebell.filestorage.exception.ArchiveFormationException;
 import by.kettlebell.filestorage.exception.Error;
-import by.kettlebell.filestorage.repository.minio.FinalRepository;
-import io.minio.ListObjectsArgs;
-import io.minio.Result;
-import io.minio.messages.DeleteObject;
-import io.minio.messages.Item;
+import by.kettlebell.filestorage.repository.minio.MinioRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -26,8 +21,8 @@ import java.util.zip.ZipOutputStream;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class FinalService {
-    private final FinalRepository finalRepository;
+public class MinioService {
+    private final MinioRepository minioRepository;
 
     public BreadcrumbAndContents getDataForBreadcrumb(String path, Long userId) throws ApplicationException {
 
@@ -41,13 +36,13 @@ public class FinalService {
 
         String prefix = getUserBucket(userId) + path + "/";
 
-        List<String> listFullPathsToObjectInFolder = finalRepository.getInfo(prefix);
+        List<String> listFullPathsToObjectInFolder = minioRepository.getInfo(prefix);
 
         List<Element> elements = new ArrayList<>();
         if (!listFullPathsToObjectInFolder.isEmpty()) {
             elements.addAll(getContentInCurrentFolder(listFullPathsToObjectInFolder, path, prefix));
         }
-        System.out.println(elements);
+
         breadcrumbAndContents.setContentInLastFolder(elements);
 
         return breadcrumbAndContents;
@@ -61,8 +56,6 @@ public class FinalService {
                 .map(fullPath -> {
 
                     String pathWithoutRootAndFirstSlash = fullPath.replaceFirst(prefix, "");
-
-
 
                     int index = pathWithoutRootAndFirstSlash.indexOf("/");
 
@@ -118,37 +111,43 @@ public class FinalService {
         return breadcrumbs;
     }
 
-    public void updateFolder(UpdateFolder updateFolder) throws ApplicationException {
+    public void updateObject(RenameObject renameObject) throws ApplicationException {
 
-        String prefixOldName = getUserBucket(updateFolder.getUserId())
-                + updateFolder.getPathCurrent()
+        String slash = "";
+
+        if (renameObject.getStatus().equals(Status.FOLDER)){
+            slash = "/";
+        }
+
+        String prefixOldName = getUserBucket(renameObject.getUserId())
+                + renameObject.getPathCurrent()
                 + "/"
-                + updateFolder.getOldName()
-                + "/";
-        String prefixNewName = getUserBucket(updateFolder.getUserId())
-                + updateFolder.getPathCurrent()
+                + renameObject.getOldName()
+                + slash;
+        String prefixNewName = getUserBucket(renameObject.getUserId())
+                + renameObject.getPathCurrent()
                 + "/"
-                + updateFolder.getNewName()
-                + "/";
+                + renameObject.getNewName()
+                + slash;
 
         List<String> objectsForDelete = new ArrayList<>();
 
-        List<String> listContentFolder = finalRepository.getInfo(prefixOldName);
+        List<String> listContentFolder = minioRepository.getInfo(prefixOldName);
 
         listContentFolder
                 .forEach(o -> {
                     String prefixNewObject = o.replaceFirst(prefixOldName, prefixNewName);
                     if (o.contains(".")) {
 
-                        finalRepository.copyObject(o, prefixNewObject);
+                        minioRepository.copyObject(o, prefixNewObject);
 
                     } else {
-                        finalRepository.createEmptyFolder(prefixNewObject);
+                        minioRepository.createEmptyFolder(prefixNewObject);
                     }
                     objectsForDelete.add(o);
                 });
 
-        finalRepository.deleteFolder(objectsForDelete);
+        minioRepository.deleteFolder(objectsForDelete);
 
     }
 
@@ -158,12 +157,12 @@ public class FinalService {
 
         if (element.getStatus().name().equals(Status.FOLDER.name())) {
 
-            List<String> content = finalRepository.getInfo(prefix + "/");
+            List<String> content = minioRepository.getInfo(prefix + "/");
 
-            finalRepository.deleteFolder(content);
+            minioRepository.deleteFolder(content);
 
         } else {
-            finalRepository.deleteFile(prefix);
+            minioRepository.deleteFile(prefix);
         }
 
     }
@@ -172,7 +171,7 @@ public class FinalService {
 
         String prefix = getUserBucket(userId);
 
-        List<String> list = finalRepository.getInfo(prefix + "/");
+        List<String> list = minioRepository.getInfo(prefix + "/");
 
         Set<Element> elements = new HashSet<>();
 
@@ -227,7 +226,7 @@ public class FinalService {
     }
 
     public void uploadFilesAndFolders(List<MultipartFile> files, List<String> folders, Long userId) throws ApplicationException {
-        finalRepository.uploadFilesAndFolders(files, folders, getUserBucket(userId));
+        minioRepository.uploadFilesAndFolders(files, folders, getUserBucket(userId));
     }
 
     public void findZipObject(String path, Long userId, OutputStream streamForUser) throws ApplicationException {
@@ -243,21 +242,21 @@ public class FinalService {
 
                 prefix.append("/");
 
-                List<String> content = finalRepository.getInfo(prefix.toString());
+                List<String> content = minioRepository.getInfo(prefix.toString());
 
                 ZipOutputStream zipOut = new ZipOutputStream(streamForUser);
 
 
                 content.forEach(fullPathToObject -> {
-                    //--------------------без слеша вначале---------------------------------
+
                     String pathEntry = fullPathToObject.replaceFirst(prefix.toString(), "");
-                    //--------------------------------------------------------------------
+
                     ZipEntry entry = new ZipEntry(pathEntry);
 
                     try {
                         zipOut.putNextEntry(entry);
-                        if (fullPathToObject.contains(".")) {//если объект не папка
-                            InputStream stream = finalRepository.findInputStreamObject(fullPathToObject);
+                        if (fullPathToObject.contains(".")) {
+                            InputStream stream = minioRepository.findInputStreamObject(fullPathToObject);
                             byte[] buffer = new byte[1024];
                             int length;
                             while ((length = stream.read(buffer)) >= 0) {
@@ -278,14 +277,14 @@ public class FinalService {
                 throw new ArchiveFormationException(Error.of("500","Error close stream for archive"));
             }
         }
-       // return path.substring(path.lastIndexOf("/") + 1).replaceFirst("\\.", "_");
+
     }
 
     private void findZipOneFile(String path, Long userId, OutputStream streamForUser) throws ApplicationException{
 
         String prefix = getUserBucket(userId) + path;
 
-        String fullPath = finalRepository.getInfo(prefix).get(0);
+        String fullPath = minioRepository.getInfo(prefix).get(0);
 
         ZipOutputStream zipOut = new ZipOutputStream(streamForUser);
 
@@ -295,7 +294,7 @@ public class FinalService {
 
         try {
             zipOut.putNextEntry(entry);
-            InputStream stream = finalRepository.findInputStreamObject(fullPath);
+            InputStream stream = minioRepository.findInputStreamObject(fullPath);
             byte[] buffer = new byte[1024];
             int length;
             while ((length = stream.read(buffer)) >= 0) {
@@ -322,7 +321,7 @@ public class FinalService {
 
         String prefix = getUserBucket(userId) + path + "/" + newFolder + "/";
 
-        finalRepository.createEmptyFolder(prefix);
+        minioRepository.createEmptyFolder(prefix);
     }
 
 }

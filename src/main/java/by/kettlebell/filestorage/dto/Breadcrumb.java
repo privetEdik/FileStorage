@@ -2,8 +2,6 @@ package by.kettlebell.filestorage.dto;
 
 import lombok.*;
 
-import java.util.*;
-
 @Getter
 @Setter
 @ToString

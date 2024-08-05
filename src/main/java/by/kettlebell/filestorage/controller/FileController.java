@@ -2,15 +2,15 @@ package by.kettlebell.filestorage.controller;
 
 import by.kettlebell.filestorage.dto.BreadcrumbAndContents;
 import by.kettlebell.filestorage.dto.Element;
+import by.kettlebell.filestorage.dto.RenameObject;
 import by.kettlebell.filestorage.dto.Status;
-import by.kettlebell.filestorage.dto.UpdateFolder;
 import by.kettlebell.filestorage.exception.Error;
 import by.kettlebell.filestorage.exception.exceptionname.ErrorNamingObjectsToLoadException;
 import by.kettlebell.filestorage.exception.exceptionname.ErrorPath;
-import by.kettlebell.filestorage.exception.exceptionname.ListObjectException;
+import by.kettlebell.filestorage.exception.validation.ElementNameIsNotInPathException;
 import by.kettlebell.filestorage.exception.validation.ValidationException;
-import by.kettlebell.filestorage.models.UserDetailsImpl;
-import by.kettlebell.filestorage.service.FinalService;
+import by.kettlebell.filestorage.service.UserDetailsImpl;
+import by.kettlebell.filestorage.service.MinioService;
 import by.kettlebell.filestorage.validator.NameFileValidator;
 import by.kettlebell.filestorage.validator.NameFolderValidator;
 import by.kettlebell.filestorage.validator.PathFileValidator;
@@ -18,16 +18,14 @@ import by.kettlebell.filestorage.validator.PathFolderValidator;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-//import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 import java.util.*;
@@ -38,7 +36,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class FileController {
 
-    private final FinalService finalService;
+    private final MinioService minioService;
     private final PathFolderValidator pathFolderValidator;
     private final PathFileValidator pathFileValidator;
     private final NameFolderValidator nameFolderValidator;
@@ -58,7 +56,7 @@ public class FileController {
             pathFolderValidator.isValid(path);
         }
 
-        BreadcrumbAndContents breadcrumbAndContents = finalService.getDataForBreadcrumb(path, userDetails.getUserId());
+        BreadcrumbAndContents breadcrumbAndContents = minioService.getDataForBreadcrumb(path, userDetails.getUserId());
 
         model.addAttribute("breadcrumb", breadcrumbAndContents.getBreadcrumbs());
 
@@ -66,44 +64,62 @@ public class FileController {
 
         model.addAttribute("content", breadcrumbAndContents.getContentInLastFolder());
 
-        model.addAttribute("updateFolder", new UpdateFolder());
+        model.addAttribute("renameObject", new RenameObject());
         model.addAttribute("actionObject", new Element());
 
         return "breadcrumbs";
 
     }
 
-    @PostMapping("/files")
-    public String patchFolder(@ModelAttribute("updateFolder") UpdateFolder updateFolder,
+    @PostMapping("/patch")
+    public String patchFolder(@ModelAttribute("updateFolder") RenameObject renameObject,
                               @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        renameObject.setUserId(userDetails.getUserId());
+        if (renameObject.getStatus().equals(Status.FILE)) {
+            String extension = renameObject.getOldName().substring(renameObject.getOldName().indexOf('.'));
 
-        updateFolder.setUserId(userDetails.getUserId());
+            String newName = renameObject.getNewName().contains(".")
+                    ? renameObject.getNewName().replaceFirst("\\..{1,}", extension)
+                    : renameObject.getNewName().concat(extension);
 
-        finalService.updateFolder(updateFolder);
+            nameFileValidator.isValid(newName);
+            renameObject.setNewName(newName);
+            minioService.updateObject(renameObject);
+        } else if (renameObject.getStatus().equals(Status.FOLDER)) {
+            nameFolderValidator.isValid(renameObject.getNewName());
+            minioService.updateObject(renameObject);
+        }
 
-        return "redirect:/breadcrumb?path=" + updateFolder.getPathCurrent();
+
+        return "redirect:/breadcrumb?path=" + renameObject.getPathCurrent();
     }
 
     @PostMapping("/delete")
-    public String deleteFolder(@RequestParam("nameElem") String name,
-                               @RequestParam("pathElem") String path,
-                               @RequestParam("statusElem") Status status,
+    public String deleteFolder(@ModelAttribute("actionObject") Element actionObject,
+                               @RequestParam("currentPath") String currentPath,
                                @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        Element element = new Element(name, status, path);
 
-        finalService.delete(element, userDetails.getUserId());
+        minioService.delete(actionObject, userDetails.getUserId());
 
-        return "redirect:/breadcrumb?path=";
+        return "redirect:/breadcrumb?path="+currentPath;
     }
 
     @GetMapping("/search")
     public String searchObject(@RequestParam("filter") String filter,
                                Model model,
                                @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        //нужна валидацыя
+        List<Element> listForResponseOnSearch;
 
-        List<Element> listForResponseOnSearch = finalService.findByFilter(filter, userDetails.getUserId());
+        if (!filter.replaceAll("[\\w]", "")
+                .replaceAll("-", "")
+                .replaceFirst("\\.", "").isEmpty()) {
+            listForResponseOnSearch = Collections.emptyList();
+        } else {
+            listForResponseOnSearch = minioService.findByFilter(filter, userDetails.getUserId());
+        }
+
+
         model.addAttribute("elements", listForResponseOnSearch);
         model.addAttribute("login", userDetails.getUsername());
 
@@ -114,9 +130,6 @@ public class FileController {
     public String uploadFilesAndFolders(MultipartHttpServletRequest request,
                                         @RequestParam("folders") List<String> folders,
                                         @AuthenticationPrincipal UserDetailsImpl userDetails) {
-
-       // PathFolderValidator pathFolderValidator = new PathFolderValidator();
-        //PathFileValidator pathFileValidator = new PathFileValidator();
 
         List<ErrorPath> errorPaths = new ArrayList<>();
 
@@ -157,40 +170,34 @@ public class FileController {
             throw new ErrorNamingObjectsToLoadException(errorPaths);
         }
 
-        finalService.uploadFilesAndFolders(files, folders, userDetails.getUserId());
+        minioService.uploadFilesAndFolders(files, folders, userDetails.getUserId());
 
         return "redirect:/breadcrumb";
     }
 
     @GetMapping("/download")
-    public void downloadFolder(@ModelAttribute("actionObject") Element actionObject,
-                                BindingResult bindingResult,
-                                //@RequestParam String path,
+    public void downloadFolder(@ModelAttribute("actionObject") @Validated Element actionObject,
                                HttpServletResponse response,
                                @AuthenticationPrincipal UserDetailsImpl userDetails) throws IOException {
-        if (bindingResult.hasErrors()){
 
-
-//            throw new ListObjectException();
-//            bindingResult.getAllErrors().stream().forEach(objectError -> {
-//                objectError.
-//            });
-        }
-
-
-        if (actionObject.getStatus().equals(Status.FILE)){
+        if (actionObject.getStatus().equals(Status.FILE)) {
             nameFileValidator.isValid(actionObject.getName());
             pathFileValidator.isValid(actionObject.getPath());
-        } else if (actionObject.getStatus().equals(Status.FOLDER)){
+
+        } else if (actionObject.getStatus().equals(Status.FOLDER)) {
             nameFolderValidator.isValid(actionObject.getName());
             pathFolderValidator.isValid(actionObject.getPath());
         }
 
-       // String folderName = path.substring(path.lastIndexOf("/") + 1).replaceFirst("\\.", "_");
-        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + actionObject.getName() + ".zip");
+        if (!actionObject.getPath().endsWith(actionObject.getName())) {
+            throw new ElementNameIsNotInPathException(Error.of("404", "Element name is not in path"));
+        }
 
-        finalService.findZipObject(actionObject.getPath(), userDetails.getUserId(), response.getOutputStream());
-        System.out.println("deleteObject: "+actionObject);
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
+                "attachment;filename=" + (actionObject.getName().replaceFirst("\\.", "_")) + ".zip");
+
+        minioService.findZipObject(actionObject.getPath(), userDetails.getUserId(), response.getOutputStream());
+
     }
 
     @PostMapping("/new-folder")
@@ -206,7 +213,7 @@ public class FileController {
             pathFolderValidator.isValid(currentPath);
         }
 
-        finalService.createFolder(newFolder, currentPath, userDetails.getUserId());
+        minioService.createFolder(newFolder, currentPath, userDetails.getUserId());
         return "redirect:/breadcrumb?path=" + currentPath;
     }
 

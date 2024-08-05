@@ -19,6 +19,7 @@ spring:
     url: jdbc:mysql://localhost:3306/storage
     user: root
     password: 1234
+    enabled: true
   servlet:
     multipart:
       max-file-size: 5MB
@@ -41,7 +42,7 @@ logging:
 #    path: /
 
 minio:
-  url: http://localhost:9090
+  url: http://localhost:9000
   bucket: user-files
   accessKey: minioadmin
   secretKey: minioadmin

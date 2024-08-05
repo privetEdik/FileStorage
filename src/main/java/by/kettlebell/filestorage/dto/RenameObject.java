@@ -8,9 +8,10 @@ import lombok.*;
 @EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpdateFolder {
+public class RenameObject {
     private Long userId;
     private String pathCurrent;
     private String newName;
     private String oldName;
+    private Status status;
 }

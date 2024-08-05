@@ -1,27 +1,21 @@
 package by.kettlebell.filestorage.dto;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+
 import lombok.*;
 
 
 @Getter
 @Setter
-
 @EqualsAndHashCode
 @ToString
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Element implements Comparable<Element> {
-    @NotNull
-    @NotBlank
+
     private String name;
-    @NotNull
-    @NotBlank
     private Status status;
-    @NotNull
-    @NotBlank
     private String path;
 
     @Override

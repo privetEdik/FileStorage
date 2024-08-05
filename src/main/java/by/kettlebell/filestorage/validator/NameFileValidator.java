@@ -3,8 +3,9 @@ package by.kettlebell.filestorage.validator;
 import by.kettlebell.filestorage.exception.ApplicationException;
 import by.kettlebell.filestorage.exception.Error;
 import by.kettlebell.filestorage.exception.validation.NameFileValidationException;
-import by.kettlebell.filestorage.exception.validation.NameFolderValidationException;
+import org.springframework.stereotype.Component;
 
+@Component
 public class NameFileValidator implements Validator {
     @Override
     public void isValid(String nameFile) throws ApplicationException {

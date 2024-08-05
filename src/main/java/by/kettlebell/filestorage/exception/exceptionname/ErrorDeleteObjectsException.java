@@ -1,7 +1,5 @@
 package by.kettlebell.filestorage.exception.exceptionname;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
