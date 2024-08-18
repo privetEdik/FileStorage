@@ -115,7 +115,7 @@ public class MinioService {
 
         String slash = "";
 
-        if (renameObject.getStatus().equals(Status.FOLDER)){
+        if (renameObject.getStatus().equals(Status.FOLDER)) {
             slash = "/";
         }
 
@@ -151,9 +151,9 @@ public class MinioService {
 
     }
 
-    public void delete(Element element, Long userId) throws ApplicationException {
+    public void delete(Element element) throws ApplicationException {
 
-        String prefix = getUserBucket(userId) + element.getPath();
+        String prefix = getUserBucket(element.getUserId()) + element.getPath();
 
         if (element.getStatus().name().equals(Status.FOLDER.name())) {
 
@@ -267,20 +267,20 @@ public class MinioService {
                         zipOut.closeEntry();
                     } catch (IOException e) {
                         log.info("Error create zip archive: {}", e.getMessage());
-                        throw new ArchiveFormationException(Error.of("500","Error create zip archive"));
+                        throw new ArchiveFormationException(Error.of("500", "Error create zip archive"));
                     }
 
                 });
                 zipOut.close();
             } catch (IOException e) {
                 log.info("Error close stream for archive: {}", e.getMessage());
-                throw new ArchiveFormationException(Error.of("500","Error close stream for archive"));
+                throw new ArchiveFormationException(Error.of("500", "Error close stream for archive"));
             }
         }
 
     }
 
-    private void findZipOneFile(String path, Long userId, OutputStream streamForUser) throws ApplicationException{
+    private void findZipOneFile(String path, Long userId, OutputStream streamForUser) throws ApplicationException {
 
         String prefix = getUserBucket(userId) + path;
 
@@ -306,7 +306,7 @@ public class MinioService {
 
         } catch (IOException e) {
             log.info("Error creating archive of one file: {}", e.getMessage());
-            throw new ArchiveFormationException(Error.of("500","Error creating archive of one file"));
+            throw new ArchiveFormationException(Error.of("500", "Error creating archive of one file"));
 
         }
 
@@ -317,7 +317,7 @@ public class MinioService {
         return "user-" + userId + "-files";
     }
 
-    public void createFolder(String newFolder, String path, Long userId) throws ApplicationException{
+    public void createFolder(String newFolder, String path, Long userId) throws ApplicationException {
 
         String prefix = getUserBucket(userId) + path + "/" + newFolder + "/";
 

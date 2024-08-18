@@ -1,5 +1,6 @@
 package by.kettlebell.filestorage.dto;
 
+import by.kettlebell.filestorage.validator.annotation.status.ValidEnum;
 import jakarta.validation.constraints.NotNull;
 
 import lombok.*;
@@ -14,7 +15,9 @@ import lombok.*;
 @AllArgsConstructor
 public class Element implements Comparable<Element> {
 
+    private Long userId;
     private String name;
+    @ValidEnum(enumClass = Status.class)
     private Status status;
     private String path;
 

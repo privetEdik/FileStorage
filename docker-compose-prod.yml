@@ -1,0 +1,92 @@
+#version: '3.8'
+
+services:
+  app:
+#    build: .
+    image: wolcow88edyaed/filestorage-app
+    container_name: spring_app
+    depends_on:
+      minio:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+#    profiles:
+#      - prod
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql_db:3306/${MYSQL_DATABASE}
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+      SPRING_REDIS_PASSWORD: ${REDIS_PASSWORD}
+      SPRING_MINIO_URL: http://minio:9000
+      SPRING_MINIO_ROOT_BUCKET: ${MINIO_ROOT_BUCKET}
+      SPRING_MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      SPRING_MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      SPRING_MAX_FILE_SIZE: ${MAX_FILE_SIZE}
+      SPRING_MAX_REQUEST_SIZE: ${MAX_REQUEST_SIZE}
+      SPRING_SESSION_TIMEOUT: ${SESSION_TIMEOUT}
+    ports:
+      - "8083:8080"
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USERNAME: ${MYSQL_USERNAME}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    command:
+      --host_cache_size=0
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "mysql_db", "-u", "${MYSQL_USERNAME}", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 30s
+      retries: 3
+      start_period: 30s
+      timeout: 10s
+#    volumes:
+#      - mysql_data:/var/lib/mysql
+
+  minio:
+    image: quay.io/minio/minio
+    container_name: minio
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://minio:9000/minio/health/live"]
+      interval: 30s
+      retries: 3
+      start_period: 30s
+      timeout: 10s
+#    volumes:
+#      - minio_data:/data
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+    command: redis-server --save 20 1 --loglevel warning --requirepass ${REDIS_PASSWORD}
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      retries: 3
+      start_period: 30s
+      timeout: 10s
+#    volumes:
+#      - redis_data:/data
+
+#volumes:
+#  mysql_data:
+#  minio_data:
+#  redis_data:
+

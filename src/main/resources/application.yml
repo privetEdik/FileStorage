@@ -1,4 +1,8 @@
 spring:
+  profiles:
+    active: prod
+  config:
+    import: optional:file:.env[.properties]
   datasource:
     url: jdbc:mysql://localhost:3306/storage
     password: 1234
@@ -13,7 +17,7 @@ spring:
     generate-ddl: true
     show-sql: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
   flyway:
     locations: classpath:db/migration
     url: jdbc:mysql://localhost:3306/storage
@@ -37,15 +41,17 @@ server:
 logging:
   level:
     root: info
-#  file:
-#    name: logs.log
-#    path: /
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs.log
+    path: /
 
 minio:
   url: http://localhost:9000
   bucket: user-files
-  accessKey: minioadmin
-  secretKey: minioadmin
+  accessKey: eduardadministrator
+  secretKey: eduardadministrator
 
 
 

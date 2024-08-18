@@ -1,0 +1,56 @@
+spring:
+  config:
+    import: optional:file:.env[.properties]
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  data:
+    redis:
+      host: ${SPRING_REDIS_HOST}
+      port: ${SPRING_REDIS_PORT}
+      password: ${SPRING_REDIS_PASSWORD}
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: create-drop
+  flyway:
+    locations: classpath:db/migration
+    url: ${SPRING_DATASOURCE_URL}
+    user: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    enabled: true
+  servlet:
+    multipart:
+      max-file-size: ${SPRING_MAX_FILE_SIZE}
+      max-request-size: ${SPRING_MAX_REQUEST_SIZE}
+  session:
+    redis:
+      namespace: "spring:session"
+      flush-mode: immediate
+#  profiles:
+#    active: prod
+server:
+  servlet:
+    session:
+      timeout: ${SPRING_SESSION_TIMEOUT}
+
+logging:
+  level:
+    root: info
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs.log
+    path: /
+
+minio:
+  url: ${SPRING_MINIO_URL}
+  bucket: ${SPRING_MINIO_ROOT_BUCKET}
+  accessKey: ${SPRING_MINIO_ACCESS_KEY}
+  secretKey: ${SPRING_MINIO_SECRET_KEY}
+
+
+

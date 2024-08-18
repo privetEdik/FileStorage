@@ -1,4 +1,4 @@
-package by.kettlebell.filestorage.service;
+package by.kettlebell.filestorage.service.details;
 
 import by.kettlebell.filestorage.dto.entity.User;
 import org.springframework.security.core.GrantedAuthority;

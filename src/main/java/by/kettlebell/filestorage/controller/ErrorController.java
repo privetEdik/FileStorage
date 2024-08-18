@@ -1,6 +1,6 @@
 package by.kettlebell.filestorage.controller;
 
-import by.kettlebell.filestorage.service.UserDetailsImpl;
+import by.kettlebell.filestorage.service.details.UserDetailsImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;

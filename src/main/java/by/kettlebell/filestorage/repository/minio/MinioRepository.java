@@ -11,7 +11,6 @@ import io.minio.messages.DeleteObject;
 import io.minio.messages.Item;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,8 +25,7 @@ import java.util.List;
 @Slf4j
 public class MinioRepository {
 
-    @Value("${minio.bucket}")
-    private String rootBucket;
+    private final String rootBucket;
 
     private final MinioClient minioClient;
 
@@ -60,7 +58,6 @@ public class MinioRepository {
 
         List<ErrorPath> deleteErrors = new ArrayList<>();
         try {
-            System.out.println(prefixes);
             List<DeleteObject> deleteObjects = prefixes.stream()
                     .map(DeleteObject::new)
                     .toList();

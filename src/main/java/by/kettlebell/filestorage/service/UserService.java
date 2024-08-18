@@ -1,9 +1,11 @@
 package by.kettlebell.filestorage.service;
 
 import by.kettlebell.filestorage.dto.entity.User;
+import by.kettlebell.filestorage.exception.ApplicationException;
 import by.kettlebell.filestorage.exception.user.UserAlreadyExistsException;
 import by.kettlebell.filestorage.exception.Error;
 import by.kettlebell.filestorage.repository.UserRepository;
+import by.kettlebell.filestorage.service.details.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -41,7 +43,11 @@ public class UserService implements UserDetailsService {
             userRepository.save(user);
         } catch (DataIntegrityViolationException e) {
             throw new UserAlreadyExistsException(Error.of(String.format("User with username %s already exists", user.getUsername())));
+        } catch (Exception e) {
+            log.info("error save user: {}", e.getMessage());
+            throw new ApplicationException(Error.of("500", e.getMessage()));
         }
+
     }
 
 }

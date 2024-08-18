@@ -6,11 +6,12 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.3.0</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath/>
     </parent>
     <groupId>by.kettlebell</groupId>
     <artifactId>FileStorage</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+<!--    <version>0.0.1-SNAPSHOT</version>-->
+    <version>0.0.1</version>
     <name>FileStorage</name>
     <description>FileStorage</description>
     <properties>
@@ -29,18 +30,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-        <!--        <dependency>-->
-        <!--            <groupId>org.webjars</groupId>-->
-        <!--            <artifactId>bootstrap</artifactId>-->
-        <!--            <version>4.0.0-2</version>-->
-        <!--        </dependency>-->
         <dependency>
             <groupId>org.webjars</groupId>
             <artifactId>webjars-locator</artifactId>
             <version>0.30</version>
         </dependency>
-
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
@@ -61,6 +55,24 @@
             <optional>true</optional>
         </dependency>
         <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>mysql</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers-bom</artifactId>
+            <version>1.20.1</version>
+            <type>pom</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>minio</artifactId>
+            <version>1.20.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
@@ -74,23 +86,10 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
-        <!-- Thymeleaf Spring Security integration -->
         <dependency>
             <groupId>org.thymeleaf.extras</groupId>
             <artifactId>thymeleaf-extras-springsecurity6</artifactId>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.thymeleaf/thymeleaf-spring6 -->
-        <!--        <dependency>-->
-        <!--            <groupId>org.thymeleaf</groupId>-->
-        <!--            <artifactId>thymeleaf-spring6</artifactId>-->
-        <!--            <version>3.1.2.RELEASE</version>-->
-        <!--        </dependency>-->
-
-        <!--            <dependency>-->
-        <!--                <groupId>org.liquibase</groupId>-->
-        <!--                <artifactId>liquibase-core</artifactId>-->
-        <!--            </dependency>-->
-
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
@@ -104,13 +103,6 @@
             <artifactId>minio</artifactId>
             <version>8.5.10</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/com.jlefebure/spring-boot-starter-minio -->
-<!--        <dependency>-->
-<!--            <groupId>com.jlefebure</groupId>-->
-<!--            <artifactId>spring-boot-starter-minio</artifactId>-->
-<!--            <version>1.10</version>-->
-<!--        </dependency>-->
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
@@ -133,5 +125,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>

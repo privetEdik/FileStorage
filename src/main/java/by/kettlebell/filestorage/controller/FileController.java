@@ -8,20 +8,23 @@ import by.kettlebell.filestorage.exception.Error;
 import by.kettlebell.filestorage.exception.exceptionname.ErrorNamingObjectsToLoadException;
 import by.kettlebell.filestorage.exception.exceptionname.ErrorPath;
 import by.kettlebell.filestorage.exception.validation.ElementNameIsNotInPathException;
+import by.kettlebell.filestorage.exception.validation.InvalidStatusException;
 import by.kettlebell.filestorage.exception.validation.ValidationException;
-import by.kettlebell.filestorage.service.UserDetailsImpl;
+import by.kettlebell.filestorage.service.details.UserDetailsImpl;
 import by.kettlebell.filestorage.service.MinioService;
 import by.kettlebell.filestorage.validator.NameFileValidator;
 import by.kettlebell.filestorage.validator.NameFolderValidator;
 import by.kettlebell.filestorage.validator.PathFileValidator;
 import by.kettlebell.filestorage.validator.PathFolderValidator;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -72,8 +75,14 @@ public class FileController {
     }
 
     @PostMapping("/patch")
-    public String patchFolder(@ModelAttribute("updateFolder") RenameObject renameObject,
+    public String patchFolder(@ModelAttribute("updateFolder") @Valid RenameObject renameObject,
+                              BindingResult bindingResult,
                               @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        if (bindingResult.hasErrors()) {
+            bindingResult.getAllErrors().get(0).getDefaultMessage();
+            throw new InvalidStatusException(Error.of("404", bindingResult.getAllErrors().get(0).getDefaultMessage()));
+        }
+
         renameObject.setUserId(userDetails.getUserId());
         if (renameObject.getStatus().equals(Status.FILE)) {
             String extension = renameObject.getOldName().substring(renameObject.getOldName().indexOf('.'));
@@ -95,14 +104,19 @@ public class FileController {
     }
 
     @PostMapping("/delete")
-    public String deleteFolder(@ModelAttribute("actionObject") Element actionObject,
+    public String deleteFolder(@ModelAttribute("actionObject") @Valid Element actionObject,
+                               BindingResult bindingResult,
                                @RequestParam("currentPath") String currentPath,
                                @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
+        if (bindingResult.hasErrors()) {
+            bindingResult.getAllErrors().get(0).getDefaultMessage();
+            throw new InvalidStatusException(Error.of("404", bindingResult.getAllErrors().get(0).getDefaultMessage()));
+        }
+        actionObject.setUserId(userDetails.getUserId());
+        minioService.delete(actionObject);
 
-        minioService.delete(actionObject, userDetails.getUserId());
-
-        return "redirect:/breadcrumb?path="+currentPath;
+        return "redirect:/breadcrumb?path=" + currentPath;
     }
 
     @GetMapping("/search")
@@ -176,10 +190,14 @@ public class FileController {
     }
 
     @GetMapping("/download")
-    public void downloadFolder(@ModelAttribute("actionObject") @Validated Element actionObject,
+    public void downloadFolder(@ModelAttribute("actionObject") @Valid Element actionObject,
+                               BindingResult bindingResult,
                                HttpServletResponse response,
                                @AuthenticationPrincipal UserDetailsImpl userDetails) throws IOException {
-
+        if (bindingResult.hasErrors()) {
+            bindingResult.getAllErrors().get(0).getDefaultMessage();
+            throw new InvalidStatusException(Error.of("404", bindingResult.getAllErrors().get(0).getDefaultMessage()));
+        }
         if (actionObject.getStatus().equals(Status.FILE)) {
             nameFileValidator.isValid(actionObject.getName());
             pathFileValidator.isValid(actionObject.getPath());

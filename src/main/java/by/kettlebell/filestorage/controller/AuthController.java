@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 
+import java.util.Objects;
+
 @Controller
 @RequiredArgsConstructor
 @Slf4j
@@ -32,9 +34,10 @@ public class AuthController {
     }
 
     @PostMapping("/registration")
-    public String register(@Valid @ModelAttribute("user") User user, BindingResult bindingResult) {
-
+    public String register(@ModelAttribute("user") @Valid User user,
+                           BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
+            bindingResult.rejectValue("username", "404", Objects.requireNonNull(bindingResult.getAllErrors().get(0).getDefaultMessage()));
             return "auth/reg";
         }
 
@@ -43,7 +46,7 @@ public class AuthController {
             log.info("Sign up successful for user {}", user.getUsername());
             return "redirect:/login";
         } catch (UserAlreadyExistsException exc) {
-            log.info("Sign up failed for user: {}| {}", user.getUsername(),exc.getMessage());
+            log.info("Sign up failed for user: {}| {}", user.getUsername(), exc.getMessage());
             bindingResult.rejectValue("username", "user.alreadyExists", "User with this username already exists");
             return "auth/reg";
         }

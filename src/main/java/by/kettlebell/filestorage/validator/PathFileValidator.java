@@ -16,10 +16,10 @@ public class PathFileValidator implements Validator {
 
         if (path == null ||
                 path.isBlank() ||
-                !path.contains(".") || //если нет точки - еррор
-                path.replaceFirst("\\.", "").contains(".") || // если больше одной точки
-                path.contains("/.") || // если файла имя пустое
-                path.endsWith(".")) { // если расширение пустое
+                !path.contains(".") || //if there is no point - error
+                path.replaceFirst("\\.", "").contains(".") || // if more than one point
+                path.contains("/.") || // if name file empty
+                path.endsWith(".")) { // if extension empty
             throw new ValidationException(Error.of("404", "Invalid name file, pattern:  ' from 1 to 10 characters . 3 characters file extension' a dash is allowed"));
         }
 
